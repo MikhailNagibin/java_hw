@@ -1,0 +1,14 @@
+name: Date Time Info
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  print-date:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print current UTC time
+        run: echo "🕐 The current UTC time is: $(date -u +'%Y-%m-%d %H:%M:%S')"
