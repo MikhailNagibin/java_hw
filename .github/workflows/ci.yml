@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print current UTC time
-        run: echo "🕐 The current UTC time is: $(date -u +'%Y-%m-%d %H:%M:%S')"
+        run: echo "The current UTC time is: $(date -u +'%Y-%m-%d %H:%M:%S')"
