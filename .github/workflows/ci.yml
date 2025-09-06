@@ -1,14 +1,18 @@
-name: Date Time Info
+name: My First Workflow
 
 on:
   push:
-    branches: [ "**" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "**" ]
+    types: [opened, synchronize]
 
 jobs:
-  print-date:
+  display_datetime_job:
     runs-on: ubuntu-latest
     steps:
-      - name: Print current UTC time
-        run: echo "The current UTC time is: $(date -u +'%Y-%m-%d %H:%M:%S')"
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Display current datetime
+        run: |
+          echo "Current date and time is $(date)"
