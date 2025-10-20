@@ -23,7 +23,7 @@
             <version>3.12.0</version>
         </dependency>
 
-        <!-- Тестовые зависимости -->
+        <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -34,7 +34,7 @@
 
     <build>
         <plugins>
-            <!-- Плагин для компиляции -->
+            <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -48,7 +48,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Плагин для выполнения тестов -->
+            <!-- Surefire plugin for unit tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -58,7 +58,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Плагин для создания исполняемого JAR -->
+            <!-- Shade plugin for executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -72,6 +72,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <!-- Возврат к оригинальному главному классу -->
                                     <mainClass>com.mipt.nagibinmikhail.Application</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
@@ -91,14 +92,14 @@
                 </executions>
             </plugin>
 
-            <!-- Плагин для очистки -->
+            <!-- Clean plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.2.0</version>
             </plugin>
 
-            <!-- Плагин для ресурсов -->
+            <!-- Resources plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
