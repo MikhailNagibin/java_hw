@@ -11,13 +11,13 @@ import com.mipt.nagibinMikhail.toDoList.Task;
  *
  * readTask(int taskId) - получение такси по её id.
  *
- * updateTask(String title, String description, boolean completed) - обновление таски. На вход принимает все данные о ней,
+ * updateTask(int id, String title, String description, boolean completed) - обновление таски. На вход принимает все данные о ней,
  *
  * deleteTask(int taskId) - удаление таски по её id
  */
 public interface TaskRepository {
     Task createTask(String title, String description, boolean completed);
     Task readTask(int taskId);
-    Task updateTask(String title, String description, boolean completed);
+    Task updateTask(int id, String title, String description, boolean completed);
     void deleteTask(int taskId);
 }

@@ -1,9 +1,6 @@
 package com.mipt.nagibinMikhail.toDoList;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 
 /**
@@ -18,6 +15,7 @@ import lombok.ToString;
 @Setter
 @EqualsAndHashCode
 @ToString
+@AllArgsConstructor
 public class Task {
     int id;
     String title;
