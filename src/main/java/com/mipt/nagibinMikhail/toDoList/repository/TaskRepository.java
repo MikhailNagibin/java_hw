@@ -1,6 +1,6 @@
 package com.mipt.nagibinMikhail.toDoList.repository;
 
-import com.mipt.nagibinMikhail.toDoList.Task;
+import com.mipt.nagibinMikhail.toDoList.model.Task;
 
 
 /**
