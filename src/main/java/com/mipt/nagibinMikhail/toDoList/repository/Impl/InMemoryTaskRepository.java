@@ -1,6 +1,6 @@
 package com.mipt.nagibinMikhail.toDoList.repository.Impl;
 
-import com.mipt.nagibinMikhail.toDoList.Task;
+import com.mipt.nagibinMikhail.toDoList.model.Task;
 import com.mipt.nagibinMikhail.toDoList.repository.TaskRepository;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
@@ -15,7 +15,10 @@ public class InMemoryTaskRepository implements TaskRepository {
 
     @Override
     public Task readTask(int id) {
-        return tasks.get(id);
+        if (tasks.containsKey(id)) {
+            return tasks.get(id);
+        }
+        return null;
     }
 
     @Override

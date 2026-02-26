@@ -1,9 +1,8 @@
 package com.mipt.nagibinMikhail.toDoList.repository.Impl;
 
-import com.mipt.nagibinMikhail.toDoList.Task;
+import com.mipt.nagibinMikhail.toDoList.model.Task;
 import com.mipt.nagibinMikhail.toDoList.repository.TaskRepository;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

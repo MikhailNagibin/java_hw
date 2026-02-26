@@ -1,4 +1,4 @@
-package com.mipt.nagibinMikhail.toDoList;
+package com.mipt.nagibinMikhail.toDoList.model;
 
 import lombok.*;
 
