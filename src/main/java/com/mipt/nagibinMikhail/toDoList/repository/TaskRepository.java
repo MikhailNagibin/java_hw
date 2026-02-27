@@ -2,6 +2,8 @@ package com.mipt.nagibinMikhail.toDoList.repository;
 
 import com.mipt.nagibinMikhail.toDoList.model.Task;
 
+import java.util.List;
+
 
 /**
  * интерфейс репозитория для работы с задачами.
@@ -20,4 +22,5 @@ public interface TaskRepository {
     Task readTask(int taskId);
     Task updateTask(int id, String title, String description, boolean completed);
     void deleteTask(int taskId);
+    List<Task> getAll();
 }

@@ -42,4 +42,13 @@ public class InMemoryTaskRepository implements TaskRepository {
     public void deleteTask(int id) {
         tasks.remove(id);
     }
+
+    @Override
+    public List<Task> getAll() {
+        List<Task> allTasks = new ArrayList<>();
+        for (int key : tasks.keySet()) {
+            allTasks.add(tasks.get(key));
+        }
+        return allTasks;
+    }
 }

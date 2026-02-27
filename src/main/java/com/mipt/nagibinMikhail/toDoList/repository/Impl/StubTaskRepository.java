@@ -3,7 +3,9 @@ package com.mipt.nagibinMikhail.toDoList.repository.Impl;
 import com.mipt.nagibinMikhail.toDoList.model.Task;
 import com.mipt.nagibinMikhail.toDoList.repository.TaskRepository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class StubTaskRepository implements TaskRepository {
@@ -42,4 +44,12 @@ public class StubTaskRepository implements TaskRepository {
         tasks.remove(id);
     }
 
+    @Override
+    public List<Task> getAll() {
+        List<Task> allTasks = new ArrayList<>();
+        for (int key : tasks.keySet()) {
+            allTasks.add(tasks.get(key));
+        }
+        return allTasks;
+    }
 }
