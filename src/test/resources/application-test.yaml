@@ -1,0 +1,16 @@
+app:
+  name: "Test To-Do List Manager"
+  version: "1.0.0-test"
+
+server:
+  port: 0
+
+spring:
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    com.mipt.nagibinMikhail.toDoList: DEBUG
+    org.springframework.web: WARN
+    org.springframework.boot.test: WARN
