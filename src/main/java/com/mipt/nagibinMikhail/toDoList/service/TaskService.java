@@ -1,4 +1,4 @@
-package com.mipt.nagibinMikhail.toDoList.Service;
+package com.mipt.nagibinMikhail.toDoList.service;
 
 import com.mipt.nagibinMikhail.toDoList.model.Task;
 import com.mipt.nagibinMikhail.toDoList.repository.TaskRepository;
@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 /**
@@ -42,9 +44,15 @@ public class TaskService {
         return null;
     }
 
-    public void deleteTask(int id) {
+    public boolean deleteTask(int id) {
         if (taskRepository.readTask(id) != null) {
             taskRepository.deleteTask(id);
+            return true;
         }
+        return false;
+    }
+
+    public List<Task> getAll() {
+        return taskRepository.getAll();
     }
 }
