@@ -17,8 +17,6 @@ import java.util.Arrays;
  * Использует @Around advice для логирования начала, конца и результатов выполнения методов.
  * Демонстрирует возможности AOP в Spring.
  *
- * @author Student Name
- * @version 1.0
  */
 @Aspect
 @Component
