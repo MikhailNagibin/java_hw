@@ -1,4 +1,4 @@
-package com.mipt.nagibinMikhail.toDoList.Service;
+package com.mipt.nagibinMikhail.toDoList.service;
 
 
 import com.mipt.nagibinMikhail.toDoList.model.Task;
