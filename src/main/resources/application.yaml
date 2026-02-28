@@ -1,3 +1,52 @@
+
+app:
+  name: ToDoList
+  version: "1.0.0"
+  description: "MVP приложение"
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+---
 spring:
-  application:
-    name: toDoList
+  config:
+    activate:
+      on-profile: dev
+  output:
+    ansi:
+      enabled: always
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.mipt.nagibinMikhail.toDoList: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %highlight(%-5level) [%thread] %cyan(%logger{36}) - %msg%n"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+server:
+  port: 8081
+
+logging:
+  level:
+    com.mipt.nagibinMikhail.toDoList: INFO
+    org.springframework.web: WARN
+  file:
+    name: logs/todo-app.log
+    max-size: 10MB
+    max-history: 7
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
