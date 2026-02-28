@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.3</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.mipt.nagibinMikhail</groupId>
 	<artifactId>toDoList</artifactId>
@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.36</version> <!-- 建议使用最新稳定版 -->
+			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -46,6 +46,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>6.1.14</version>
 		</dependency>
 	</dependencies>
 
