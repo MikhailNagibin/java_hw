@@ -1,6 +1,8 @@
 package com.mipt.nagibinMikhail.toDoList.dto;
 
 import com.mipt.nagibinMikhail.toDoList.model.Priority;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +15,19 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskUpdateDto {
+    @Size(min = 3, max = 100, groups = OnUpdate.class)
     private String title;
+
+    @Size(max = 500, groups = OnUpdate.class)
     private String description;
+
     private Boolean completed;
+
+    @FutureOrPresent(groups = OnUpdate.class)
     private LocalDate dueDate;
+
     private Priority priority;
+
+    @Size(max = 5, groups = OnUpdate.class)
     private Set<String> tags;
 }
