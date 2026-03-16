@@ -1,7 +1,10 @@
 package com.mipt.nagibinMikhail.toDoList.model;
 
 import lombok.*;
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Модель данных задачи.
@@ -11,15 +14,20 @@ import lombok.*;
  * статус выполнения (boolean completed)
  *
  */
-@Getter
-@Setter
-@EqualsAndHashCode
-@ToString
-@AllArgsConstructor
+@Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Task {
-    int id;
-    String title;
-    String description;
-    boolean completed;
+    private Long id;
+    private String title;
+    private String description;
+    private boolean completed;
+
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDate dueDate;
+    private Priority priority;
+    @Builder.Default
+    private Set<String> tags = new HashSet<>();
 }
