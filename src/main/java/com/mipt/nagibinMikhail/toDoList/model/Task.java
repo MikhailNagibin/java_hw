@@ -19,7 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Task {
-    private Long id;
+    private int id;
     private String title;
     private String description;
     private boolean completed;

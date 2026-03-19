@@ -13,9 +13,6 @@ import java.util.List;
 /**
  * REST контроллер для управления задачами.
  * Предоставляет полный набор CRUD операций для работы с задачами.
- *
- * @author Student Name
- * @version 1.0
  */
 @RestController
 @RequestMapping("/api/tasks")
