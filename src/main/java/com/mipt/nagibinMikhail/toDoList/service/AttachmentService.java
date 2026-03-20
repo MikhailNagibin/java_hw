@@ -30,8 +30,8 @@ public class AttachmentService {
     @Value("${app.upload.path:uploads}")
     private String uploadPath;
 
-    public TaskAttachment storeAttachment(Long taskId, MultipartFile file) {
-        if (!taskRepository.existsById(taskId)) {
+    public TaskAttachment storeAttachment(int taskId, MultipartFile file) {
+        if (taskRepository.readTask(taskId) == null) {
             throw new TaskNotFoundException("Task not found with id: " + taskId);
         }
 

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TaskAttachment {
     private Long id;
-    private Long taskId;
+    private int taskId;
     private String fileName;
     private String storedFileName;
     private String contentType;
