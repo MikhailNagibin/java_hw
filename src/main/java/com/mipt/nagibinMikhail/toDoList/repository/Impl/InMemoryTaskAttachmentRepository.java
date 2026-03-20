@@ -31,7 +31,7 @@ public class InMemoryTaskAttachmentRepository implements TaskAttachmentRepositor
     @Override
     public List<TaskAttachment> findByTaskId(int taskId) {
         return storage.values().stream()
-            .filter(a -> a.getTaskId().equals(taskId))
+            .filter(a -> a.getTaskId() == taskId)
             .toList();
     }
 
