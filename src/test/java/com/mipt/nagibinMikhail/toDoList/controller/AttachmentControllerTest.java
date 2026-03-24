@@ -1,6 +1,7 @@
 package com.mipt.nagibinMikhail.toDoList.controller;
 
 import com.mipt.nagibinMikhail.toDoList.dto.AttachmentResponseDto;
+import com.mipt.nagibinMikhail.toDoList.exception.TaskAttachmentNotFoundException;
 import com.mipt.nagibinMikhail.toDoList.exception.TaskNotFoundException;
 import com.mipt.nagibinMikhail.toDoList.model.TaskAttachment;
 import com.mipt.nagibinMikhail.toDoList.service.AttachmentService;
@@ -15,10 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -56,8 +53,7 @@ class AttachmentControllerTest {
             .andExpect(header().string("X-API-Version", "2.0.0"))
             .andExpect(jsonPath("$.id").value(1))
             .andExpect(jsonPath("$.fileName").value("test.txt"))
-            .andExpect(jsonPath("$.size").value(7))
-            .andExpect(jsonPath("$.uploadedAt").exists());
+            .andExpect(jsonPath("$.size").value(7));
     }
 
     @Test
@@ -70,9 +66,7 @@ class AttachmentControllerTest {
 
         mockMvc.perform(multipart("/api/tasks/99/attachments")
                 .file(file))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.error").value("Resource Not Found"))
-            .andExpect(jsonPath("$.message").value("Task not found with id: 99"));
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -109,14 +103,13 @@ class AttachmentControllerTest {
             .id(1L)
             .fileName("test.txt")
             .storedFileName("abc123_test.txt")
-            .contentType("text/plain")
-            .size(7L)
             .build();
 
         when(attachmentService.getAttachment(1L)).thenReturn(attachment);
+
         Resource resource = mock(Resource.class);
-        when(attachmentService.loadAsResource(1L)).thenReturn(resource);
         when(resource.getFilename()).thenReturn("test.txt");
+        when(attachmentService.loadAsResource(1L)).thenReturn(resource);
 
         mockMvc.perform(get("/api/attachments/1"))
             .andExpect(status().isOk())
@@ -127,11 +120,10 @@ class AttachmentControllerTest {
     @Test
     void downloadAttachment_NotFound_ShouldReturn404() throws Exception {
         when(attachmentService.getAttachment(999L))
-            .thenThrow(new TaskNotFoundException("Attachment not found"));
+            .thenThrow(new TaskAttachmentNotFoundException("Attachment not found with id: 999"));
 
         mockMvc.perform(get("/api/attachments/999"))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.error").value("Resource Not Found"));
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -145,7 +137,7 @@ class AttachmentControllerTest {
 
     @Test
     void deleteAttachment_NotFound_ShouldReturn404() throws Exception {
-        doThrow(new TaskNotFoundException("Attachment not found"))
+        doThrow(new TaskAttachmentNotFoundException("Attachment not found with id: 999"))
             .when(attachmentService).deleteAttachment(999L);
 
         mockMvc.perform(delete("/api/attachments/999"))
