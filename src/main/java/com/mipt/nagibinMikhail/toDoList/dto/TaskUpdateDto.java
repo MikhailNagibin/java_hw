@@ -1,6 +1,7 @@
 package com.mipt.nagibinMikhail.toDoList.dto;
 
 import com.mipt.nagibinMikhail.toDoList.model.Priority;
+import com.mipt.nagibinMikhail.toDoList.validation.DueDateNotBeforeCreation;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@DueDateNotBeforeCreation(groups = OnUpdate.class)   // добавлено
 public class TaskUpdateDto {
     @Size(min = 3, max = 100, groups = OnUpdate.class)
     private String title;

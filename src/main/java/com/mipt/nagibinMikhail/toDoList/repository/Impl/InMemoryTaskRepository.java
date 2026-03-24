@@ -23,7 +23,12 @@ public class InMemoryTaskRepository implements TaskRepository {
 
     @Override
     public Task createTask(String title, String description, boolean completed) {
-        Task task = new Task(random.nextInt(), title, description, completed);
+        Task task = Task.builder()
+            .id(random.nextInt())
+            .title(title)
+            .description(description)
+            .completed(completed)
+            .build();
         tasks.put(task.getId(), task);
         return task;
     }

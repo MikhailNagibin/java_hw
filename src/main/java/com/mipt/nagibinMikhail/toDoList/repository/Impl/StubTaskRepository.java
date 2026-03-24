@@ -3,17 +3,23 @@ package com.mipt.nagibinMikhail.toDoList.repository.Impl;
 import com.mipt.nagibinMikhail.toDoList.model.Task;
 import com.mipt.nagibinMikhail.toDoList.repository.TaskRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StubTaskRepository implements TaskRepository {
-    public final Map<Integer, Task> tasks = new HashMap<>();
+    Random random = new Random();
+
+
+    public final Map<Integer, Task> tasks = new ConcurrentHashMap<>();
     int maxId;
 
     public  StubTaskRepository() {
-        tasks.put(1, new Task(1, "title", "description", false));
+        tasks.put(1, Task.builder()
+            .id(random.nextInt())
+            .title("title")
+            .description("description")
+            .completed(false)
+            .build());
         maxId = 1;
     }
 
@@ -24,7 +30,13 @@ public class StubTaskRepository implements TaskRepository {
 
     @Override
     public Task createTask(String title, String description, boolean completed) {
-        Task task = new Task(++maxId, title, description, completed);
+        Task task = Task.builder()
+            .id(random.nextInt())
+            .title(title)
+            .description(description)
+            .completed(completed)
+            .build();
+        tasks.put(task.getId(), task);
         tasks.put(task.getId(), task);
         return task;
     }

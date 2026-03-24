@@ -6,6 +6,7 @@ import com.mipt.nagibinMikhail.toDoList.model.Task;
 import com.mipt.nagibinMikhail.toDoList.service.TaskService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,9 @@ public class FavoritesController {
 
     private static final String FAVORITES_SESSION_KEY = "favoriteTaskIds";
 
+    @Value("${api.version:2.0.0}")
+    private String apiVersion;
+
     @PostMapping("/{taskId}")
     public ResponseEntity<Void> addToFavorites(@PathVariable Integer taskId, HttpSession session) {
         Task task = taskService.readTask(taskId);
@@ -35,7 +39,7 @@ public class FavoritesController {
         favorites.add(taskId);
         session.setAttribute(FAVORITES_SESSION_KEY, favorites);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().header("X-API-Version", apiVersion).build();
     }
 
     @DeleteMapping("/{taskId}")
@@ -43,7 +47,7 @@ public class FavoritesController {
         Set<Integer> favorites = getFavoritesFromSession(session);
         favorites.remove(taskId);
         session.setAttribute(FAVORITES_SESSION_KEY, favorites);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().header("X-API-Version", apiVersion).build();
     }
 
     @GetMapping
@@ -55,7 +59,9 @@ public class FavoritesController {
             .map(taskMapper::toResponseDto)
             .collect(Collectors.toList());
 
-        return ResponseEntity.ok(favoriteTasks);
+        return ResponseEntity.ok()
+            .header("X-API-Version", apiVersion)
+            .body(favoriteTasks);
     }
 
     @SuppressWarnings("unchecked")
