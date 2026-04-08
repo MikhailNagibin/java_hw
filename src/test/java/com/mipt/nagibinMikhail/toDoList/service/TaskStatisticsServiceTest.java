@@ -1,6 +1,5 @@
 package com.mipt.nagibinMikhail.toDoList.service;
 
-import com.mipt.nagibinMikhail.toDoList.model.Task;
 import com.mipt.nagibinMikhail.toDoList.repository.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

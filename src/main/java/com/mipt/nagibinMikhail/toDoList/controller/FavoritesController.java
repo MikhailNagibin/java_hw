@@ -2,7 +2,7 @@ package com.mipt.nagibinMikhail.toDoList.controller;
 
 import com.mipt.nagibinMikhail.toDoList.dto.TaskResponseDto;
 import com.mipt.nagibinMikhail.toDoList.mapper.TaskMapper;
-import com.mipt.nagibinMikhail.toDoList.model.Task;
+import com.mipt.nagibinMikhail.toDoList.model.TaskModel;
 import com.mipt.nagibinMikhail.toDoList.service.TaskService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,7 +29,7 @@ public class FavoritesController {
 
     @PostMapping("/{taskId}")
     public ResponseEntity<Void> addToFavorites(@PathVariable Integer taskId, HttpSession session) {
-        Task task = taskService.readTask(taskId);
+        TaskModel task = taskService.readTask(taskId);
         if (task == null) {
             return ResponseEntity.notFound().build();
         }

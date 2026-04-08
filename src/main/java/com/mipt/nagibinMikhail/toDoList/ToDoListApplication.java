@@ -2,14 +2,10 @@ package com.mipt.nagibinMikhail.toDoList;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-/**
- * Главный класс приложения To-Do List Manager.
- * Запускает Spring Boot приложение и включает поддержку AOP.
- */
 @SpringBootApplication
-@EnableAspectJAutoProxy(proxyTargetClass = true)
+@EnableJpaAuditing
 public class ToDoListApplication {
     public static void main(String[] args) {
         SpringApplication.run(ToDoListApplication.class, args);
