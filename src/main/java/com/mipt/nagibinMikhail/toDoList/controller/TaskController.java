@@ -7,7 +7,7 @@ import com.mipt.nagibinMikhail.toDoList.dto.TaskResponseDto;
 import com.mipt.nagibinMikhail.toDoList.dto.TaskUpdateDto;
 import com.mipt.nagibinMikhail.toDoList.exception.TaskNotFoundException;
 import com.mipt.nagibinMikhail.toDoList.mapper.TaskMapper;
-import com.mipt.nagibinMikhail.toDoList.model.Task;
+import com.mipt.nagibinMikhail.toDoList.model.TaskModel;
 import com.mipt.nagibinMikhail.toDoList.service.TaskService;
 import com.mipt.nagibinMikhail.toDoList.service.TaskStatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -56,7 +55,7 @@ public class TaskController {
     })
     @GetMapping
     public ResponseEntity<List<TaskResponseDto>> getAllTasks() {
-        List<Task> tasks = taskService.getAll();
+        List<TaskModel> tasks = taskService.getAll();
         List<TaskResponseDto> response = tasks.stream()
             .map(taskMapper::toResponseDto)
             .toList();
@@ -84,7 +83,7 @@ public class TaskController {
         @Parameter(description = "ID задачи", required = true)
         @PathVariable Integer id) {
 
-        Task task = taskService.readTask(id);
+        TaskModel task = taskService.readTask(id);
 
         if (task != null) {
             return ResponseEntity.ok()
@@ -110,8 +109,8 @@ public class TaskController {
     public ResponseEntity<TaskResponseDto> createTask(
         @Validated(OnCreate.class) @RequestBody TaskCreateDto createDto) {
 
-        Task task = taskMapper.toEntity(createDto);
-        Task createdTask = taskService.createTask(
+        TaskModel task = taskMapper.toEntity(createDto);
+        TaskModel createdTask = taskService.createTask(
             task.getTitle(),
             task.getDescription(),
             false // новые задачи всегда невыполненные
@@ -147,7 +146,7 @@ public class TaskController {
         @PathVariable int id,
         @Validated(OnUpdate.class) @RequestBody TaskUpdateDto updateDto) {
 
-        Task existingTask = taskService.readTask(id);
+        TaskModel existingTask = taskService.readTask(id);
         if (existingTask == null) {
             throw new TaskNotFoundException("Task not found with id: " + id);
         }
@@ -172,7 +171,7 @@ public class TaskController {
             existingTask.setTags(updateDto.getTags());
         }
 
-        Task updatedTask = taskService.updateTask(
+        TaskModel updatedTask = taskService.updateTask(
             id,
             existingTask.getTitle(),
             existingTask.getDescription(),
@@ -204,7 +203,7 @@ public class TaskController {
         @PathVariable int id,
         @Validated(OnUpdate.class) @RequestBody TaskUpdateDto updateDto) {
 
-        Task existingTask = taskService.readTask(id);
+        TaskModel existingTask = taskService.readTask(id);
         if (existingTask == null) {
             throw new TaskNotFoundException("Task not found with id: " + id);
         }
@@ -212,7 +211,7 @@ public class TaskController {
         // Применяем маппер для частичного обновления
         taskMapper.updateEntity(updateDto, existingTask);
 
-        Task updatedTask = taskService.updateTask(
+        TaskModel updatedTask = taskService.updateTask(
             id,
             existingTask.getTitle(),
             existingTask.getDescription(),

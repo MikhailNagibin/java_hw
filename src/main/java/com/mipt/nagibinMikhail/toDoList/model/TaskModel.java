@@ -16,9 +16,10 @@ import java.util.Set;
  */
 @Data
 @Builder
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Task {
+public class TaskModel {
     private int id;
     private String title;
     private String description;

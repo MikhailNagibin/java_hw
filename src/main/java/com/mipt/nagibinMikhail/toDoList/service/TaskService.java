@@ -1,30 +1,34 @@
 package com.mipt.nagibinMikhail.toDoList.service;
 
-import com.mipt.nagibinMikhail.toDoList.model.Task;
+import com.mipt.nagibinMikhail.toDoList.entity.Task;
+import com.mipt.nagibinMikhail.toDoList.exception.BulkUpdateException;
+import com.mipt.nagibinMikhail.toDoList.mapper.TaskMapper;
+import com.mipt.nagibinMikhail.toDoList.model.Priority;
+import com.mipt.nagibinMikhail.toDoList.model.TaskModel;
 import com.mipt.nagibinMikhail.toDoList.repository.TaskRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-
-/**
- * Сервис для управления задачами.
- *
- */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class TaskService {
-    private static final Logger logger = LoggerFactory.getLogger(TaskService.class);
-    private Map<Integer, Task> taskCache;
+
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
     @Value("${app.name:To-Do List Manager}")
     private String appName;
@@ -32,110 +36,173 @@ public class TaskService {
     @Value("${app.version:1.0.0}")
     private String appVersion;
 
-    @Autowired
-    public TaskService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-        logger.info("TaskService создан с инжекцией через конструктор");
-    }
-
     @PostConstruct
     public void init() {
-        logger.info("=== @PostConstruct: НАЧАЛО инициализации кэша задач ===");
-        logger.info("Приложение: {} версия {}", appName, appVersion);
-        logger.info("Время инициализации: {}", LocalDateTime.now());
-
-        taskCache = new ConcurrentHashMap<>();
-
-        List<Task> allTasks = taskRepository.getAll();
-        logger.info("Всего задач в репозитории: {}", allTasks.size());
-
-        int loadedCount = 0;
-
-        for (Task task : allTasks) {
-            if (loadedCount < 5) {
-                taskCache.put(task.getId(), task);
-                logger.debug("Задача загружена в кэш: ID={}, название='{}'",
-                    task.getId(), task.getTitle());
-                loadedCount++;
-            } else {
-                break;
-            }
-        }
-
-        logger.info("=== @PostConstruct: ЗАВЕРШЕНИЕ инициализации. Загружено {} задач в кэш ===",
-            taskCache.size());
+        log.info("=== @PostConstruct: НАЧАЛО инициализации TaskService ===");
+        log.info("Приложение: {} версия {}", appName, appVersion);
+        log.info("Время инициализации: {}", LocalDateTime.now());
+        log.info("Всего задач в БД: {}", taskRepository.count());
+        log.info("=== @PostConstruct: ЗАВЕРШЕНИЕ инициализации ===");
     }
 
-    public Task readTask(int id) {
-        logger.debug("Получение задачи по ID: {}", id);
-        return taskRepository.readTask(id);
+    @PreDestroy
+    public void destroy() {
+        log.info("=== @PreDestroy: НАЧАЛО очистки ресурсов ===");
+        log.info("Время завершения: {}", LocalDateTime.now());
+        log.info("Приложение: {} версия {} завершает работу", appName, appVersion);
+
+        long totalTasks = taskRepository.count();
+        long completedTasks = taskRepository.countByCompleted(true);
+        long activeTasks = totalTasks - completedTasks;
+
+        log.info("========== СТАТИСТИКА ПЕРЕД ЗАВЕРШЕНИЕМ ==========");
+        log.info("Всего задач в БД: {}", totalTasks);
+        log.info("Выполненных задач: {}", completedTasks);
+        log.info("Активных задач: {}", activeTasks);
+        log.info("==================================================");
+        log.info("=== @PreDestroy: ЗАВЕРШЕНИЕ очистки ===");
     }
 
-    public Task createTask(String title, String description, boolean completed) {
-        logger.debug("Создание новой задачи: {}", title);
-        return taskRepository.createTask(title, description, completed);
+    @Transactional(readOnly = true)
+    public TaskModel readTask(int id) {
+        log.debug("Получение задачи по ID: {}", id);
+        return taskRepository.findById(id)
+            .map(taskMapper::toModel)
+            .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
     }
 
-    public Task updateTask(int id, String title, String description, boolean completed) {
-        if (taskRepository.readTask(id) != null) {
-            taskRepository.updateTask(id, title, description, completed);
-            return taskRepository.readTask(id);
-        }
-        return null;
+    @Transactional
+    public TaskModel createTask(String title, String description, boolean completed) {
+        log.debug("Создание новой задачи: {}", title);
+        Task task = Task.builder()
+            .title(title)
+            .description(description)
+            .completed(completed)
+            .build();
+        Task saved = taskRepository.save(task);
+        return taskMapper.toModel(saved);
     }
 
+    @Transactional
+    public TaskModel createTask(TaskModel taskModel) {
+        log.debug("Создание новой задачи из модели: {}", taskModel.getTitle());
+        Task task = taskMapper.toEntity(taskModel);
+        Task saved = taskRepository.save(task);
+        return taskMapper.toModel(saved);
+    }
+
+    @Transactional
+    public TaskModel updateTask(int id, String title, String description, boolean completed) {
+        Task task = taskRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
+
+        task.setTitle(title);
+        task.setDescription(description);
+        task.setCompleted(completed);
+
+        Task updated = taskRepository.save(task);
+        return taskMapper.toModel(updated);
+    }
+
+    @Transactional
+    public TaskModel updateTask(int id, TaskModel taskModel) {
+        Task task = taskRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
+
+        taskMapper.updateEntity(task, taskModel);
+        Task updated = taskRepository.save(task);
+        return taskMapper.toModel(updated);
+    }
+
+    @Transactional
     public boolean deleteTask(int id) {
-        if (taskRepository.readTask(id) != null) {
-            taskRepository.deleteTask(id);
-            return true;
+        if (!taskRepository.existsById(id)) {
+            return false;
         }
-        return false;
+        taskRepository.deleteById(id);
+        return true;
     }
 
-    public List<Task> getAll() {
-        return taskRepository.getAll();
+    @Transactional(readOnly = true)
+    public List<TaskModel> getAll() {
+        return taskRepository.findAll().stream()
+            .map(taskMapper::toModel)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskModel> getTasksWithAttachments() {
+        // Решение проблемы N+1 через JOIN FETCH
+        return taskRepository.findAllWithAttachmentsJoinFetch().stream()
+            .map(taskMapper::toModel)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskModel> getTasksByCompleted(boolean completed) {
+        return taskRepository.findByCompleted(completed).stream()
+            .map(taskMapper::toModel)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskModel> getTasksByCompletedAndPriority(boolean completed, Priority priority) {
+        return taskRepository.findByCompletedAndPriority(completed, priority).stream()
+            .map(taskMapper::toModel)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskModel> getTasksDueInNextWeek() {
+        LocalDate today = LocalDate.now();
+        LocalDate nextWeek = today.plusDays(7);
+        return taskRepository.findTasksDueInNextWeek(today, nextWeek).stream()
+            .map(taskMapper::toModel)
+            .collect(Collectors.toList());
     }
 
     /**
-     * Очистка ресурсов перед уничтожением бина.
-     * Логирует статистику использования перед уничтожением.
+     * Массовое обновление задач как выполненных.
+     * Демонстрация транзакционности:
+     * - если в списке есть несуществующий ID, транзакция откатывается
+     * - используется явно заданная конфигурация @Transactional
+     *
+     * @param ids список ID задач для обновления
+     * @throws BulkUpdateException если хотя бы один ID не существует
      */
-    @PreDestroy
-    public void destroy() {
-        logger.info("=== @PreDestroy: НАЧАЛО очистки ресурсов ===");
-        logger.info("Время завершения: {}", LocalDateTime.now());
-        logger.info("Приложение: {} версия {} завершает работу", appName, appVersion);
+    @Transactional(
+        propagation = Propagation.REQUIRED,
+        isolation = Isolation.READ_COMMITTED,
+        rollbackFor = {BulkUpdateException.class, RuntimeException.class},
+        noRollbackFor = {}
+    )
+    public void bulkCompleteTasks(List<Integer> ids) {
+        log.info("Начало массового обновления задач. IDs: {}", ids);
 
-        logger.info("========== СТАТИСТИКА ПЕРЕД ЗАВЕРШЕНИЕМ ==========");
-        logger.info("Количество задач в кэше: {}", taskCache.size());
-
-        List<Task> allTasks = taskRepository.getAll();
-        logger.info("Всего задач в репозитории: {}", allTasks.size());
-
-        int completedCount = 0;
-        for (Task task : allTasks) {
-            if (task.isCompleted()) {
-                completedCount++;
-            }
-        }
-        int activeCount = allTasks.size() - completedCount;
-
-        logger.info("Выполненных задач: {}", completedCount);
-        logger.info("Активных задач: {}", activeCount);
-
-        // Логируем содержимое кэша
-        if (!taskCache.isEmpty()) {
-            logger.info("Задачи в кэше:");
-            for (Map.Entry<Integer, Task> entry : taskCache.entrySet()) {
-                Task task = entry.getValue();
-                logger.info("  - ID: {}, Название: {}, Выполнена: {}",
-                    task.getId(), task.getTitle(), task.isCompleted());
-            }
+        if (ids == null || ids.isEmpty()) {
+            log.warn("Пустой список IDs для массового обновления");
+            return;
         }
 
-        logger.info("==================================================");
+        // Проверяем существование всех ID
+        long existingCount = taskRepository.countByIdIn(ids);
+        if (existingCount != ids.size()) {
+            log.error("Не все задачи существуют. Ожидалось: {}, найдено: {}", ids.size(), existingCount);
+            throw new BulkUpdateException(
+                String.format("Not all tasks exist. Expected: %d, found: %d", ids.size(), existingCount)
+            );
+        }
 
-        taskCache.clear();
-        logger.info("=== @PreDestroy: ЗАВЕРШЕНИЕ очистки. Кэш очищен ===");
+        // Выполняем массовое обновление
+        int updatedCount = taskRepository.markCompletedByIds(ids);
+        log.info("Успешно обновлено {} задач", updatedCount);
+
+        // Проверяем, что обновлены все
+        if (updatedCount != ids.size()) {
+            log.warn("Обновлено не всех задач. Ожидалось: {}, обновлено: {}", ids.size(), updatedCount);
+            throw new BulkUpdateException(
+                String.format("Update count mismatch. Expected: %d, updated: %d", ids.size(), updatedCount)
+            );
+        }
     }
 }

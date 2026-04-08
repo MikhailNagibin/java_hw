@@ -1,8 +1,7 @@
 package com.mipt.nagibinMikhail.toDoList.controller;
 
-import com.mipt.nagibinMikhail.toDoList.dto.TaskResponseDto;
 import com.mipt.nagibinMikhail.toDoList.mapper.TaskMapper;
-import com.mipt.nagibinMikhail.toDoList.model.Task;
+import com.mipt.nagibinMikhail.toDoList.model.TaskModel;
 import com.mipt.nagibinMikhail.toDoList.service.TaskService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +10,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,7 +30,7 @@ class FavoritesControllerTest {
 
     @Test
     void addToFavorites_TaskExists_ShouldAddToSession() throws Exception {
-        Task task = new Task();
+        TaskModel task = new TaskModel();
         task.setId(1);
         when(taskService.readTask(1)).thenReturn(task);
 

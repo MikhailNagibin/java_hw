@@ -4,7 +4,7 @@ import com.mipt.nagibinMikhail.toDoList.dto.TaskCreateDto;
 import com.mipt.nagibinMikhail.toDoList.dto.TaskResponseDto;
 import com.mipt.nagibinMikhail.toDoList.dto.TaskUpdateDto;
 import com.mipt.nagibinMikhail.toDoList.model.Priority;
-import com.mipt.nagibinMikhail.toDoList.model.Task;
+import com.mipt.nagibinMikhail.toDoList.model.TaskModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,7 +31,7 @@ class TaskMapperTest {
             .tags(Set.of("work", "urgent"))
             .build();
 
-        Task task = taskMapper.toEntity(dto);
+        TaskModel task = taskMapper.toEntity(dto);
 
         assertThat(task.getId()).isZero(); // игнорируется
         assertThat(task.getTitle()).isEqualTo("Test Task");
@@ -45,7 +45,7 @@ class TaskMapperTest {
 
     @Test
     void updateEntity_ShouldUpdateOnlyNonNullFields() {
-        Task task = Task.builder()
+        TaskModel task = TaskModel.builder()
             .id(1)
             .title("Old Title")
             .description("Old Description")
@@ -76,7 +76,7 @@ class TaskMapperTest {
     @Test
     void toResponseDto_ShouldMapTaskToDto() {
         LocalDateTime now = LocalDateTime.now();
-        Task task = Task.builder()
+        TaskModel task = TaskModel.builder()
             .id(10)
             .title("Task")
             .description("Desc")

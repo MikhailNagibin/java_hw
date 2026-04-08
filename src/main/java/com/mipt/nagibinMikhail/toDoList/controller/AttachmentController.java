@@ -1,7 +1,7 @@
 package com.mipt.nagibinMikhail.toDoList.controller;
 
 import com.mipt.nagibinMikhail.toDoList.dto.AttachmentResponseDto;
-import com.mipt.nagibinMikhail.toDoList.model.TaskAttachment;
+import com.mipt.nagibinMikhail.toDoList.entity.TaskAttachment;
 import com.mipt.nagibinMikhail.toDoList.service.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
