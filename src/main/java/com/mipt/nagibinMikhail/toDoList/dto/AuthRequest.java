@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskCreateDto {
-    @NotBlank(message = "Title is required")
-    private String title;
+public class AuthRequest {
+    @NotBlank(message = "Username is required")
+    private String username;
 
-    private String description;
-    private Boolean completed = false;
+    @NotBlank(message = "Password is required")
+    private String password;
 }

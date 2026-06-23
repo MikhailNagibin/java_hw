@@ -6,17 +6,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Модель данных задачи.
- * Содержит основную информацию о задаче:
- * идентификатор(int id)
- * заголовок(String title) описание(String description)
- * статус выполнения (boolean completed)
- *
- */
 @Data
 @Builder
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskModel {
@@ -27,8 +18,13 @@ public class TaskModel {
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
     private LocalDate dueDate;
     private Priority priority;
+
     @Builder.Default
     private Set<String> tags = new HashSet<>();
 }
