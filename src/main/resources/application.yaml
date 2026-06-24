@@ -1,7 +1,9 @@
 app:
   name: ToDoList
   version: "1.0.0"
-  description: "MVP приложение"
+  description: "Resilient Secure HTTP Gateway"
+  upload:
+    path: ./uploads
 
 server:
   port: 8080
@@ -9,28 +11,224 @@ server:
     include-message: always
     include-binding-errors: always
 
----
 spring:
-  config:
-    activate:
-      on-profile: dev
-  output:
-    ansi:
-      enabled: always
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  profiles:
+    active: h2
 
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-for-jwt-must-be-at-least-32-chars-long}
+  expiration: ${JWT_EXPIRATION:3600000}
+
+# External API Configuration
+external:
+  api:
+    url: ${EXTERNAL_API_URL:http://localhost:8080/external/v1}
+    connect-timeout: 3000
+    read-timeout: 5000
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      externalApi:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2s
+        writableStackTraceEnabled: true
+  ratelimiter:
+    instances:
+      externalApi:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 500ms
+        registerHealthIndicator: true
+  retry:
+    instances:
+      externalApi:
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.ResourceAccessException
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
 logging:
   level:
     com.mipt.nagibinMikhail.toDoList: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.boot: INFO
+    org.springframework.security: DEBUG
+    org.springframework.web.client: DEBUG
+    io.github.resilience4j: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} %highlight(%-5level) [%thread] %cyan(%logger{36}) - %msg%n"
 
 ---
+# DEV профиль - PostgreSQL
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/todolist
+    username: postgres
+    password: qwerty
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  output:
+    ansi:
+      enabled: always
+
+jwt:
+  secret: dev-secret-key-for-testing-only-must-be-32-chars
+  expiration: 3600000
+
+external:
+  api:
+    url: http://localhost:8080/external/v1
+    connect-timeout: 3000
+    read-timeout: 5000
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      externalApi:
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        waitDurationInOpenState: 3s
+  ratelimiter:
+    instances:
+      externalApi:
+        limitForPeriod: 5
+        limitRefreshPeriod: 1s
+
+---
+# H2 профиль для быстрой разработки
+spring:
+  config:
+    activate:
+      on-profile: h2
+  datasource:
+    url: jdbc:h2:mem:todolist;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  flyway:
+    enabled: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+jwt:
+  secret: h2-test-secret-key-for-jwt-32-chars-long!!
+  expiration: 3600000
+
+external:
+  api:
+    url: http://localhost:8080/external/v1
+    connect-timeout: 3000
+    read-timeout: 5000
+
+---
+# TEST профиль - для тестов
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: test-secret-key-for-jwt-32-chars-long-test
+  expiration: 3600000
+
+external:
+  api:
+    url: http://localhost:${server.port}/external/v1
+    connect-timeout: 3000
+    read-timeout: 5000
+
+---
+# PROD профиль - production
 spring:
   config:
     activate:
       on-profile: prod
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/todolist}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:qwerty}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
   servlet:
     multipart:
       max-file-size: 10MB
@@ -38,6 +236,25 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000}
+
+external:
+  api:
+    url: ${EXTERNAL_API_URL}
+    connect-timeout: ${EXTERNAL_CONNECT_TIMEOUT:3000}
+    read-timeout: ${EXTERNAL_READ_TIMEOUT:5000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
@@ -53,4 +270,4 @@ logging:
 
 app:
   upload:
-    path: ./uploads
+    path: ${UPLOAD_PATH:/app/uploads}

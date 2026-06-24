@@ -1,71 +1,73 @@
 package com.mipt.nagibinMikhail.toDoList.aspect;
 
-
+import com.mipt.nagibinMikhail.toDoList.security.JwtUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
-/**
- * Аспект для логирования выполнения методов сервисов.
- * Использует @Around advice для логирования начала, конца и результатов выполнения методов.
- * Демонстрирует возможности AOP в Spring.
- *
- */
 @Aspect
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class LoggingAspect {
-    private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
 
-    /**
-     * Pointcut для всех методов в пакете service и его подпакетах
-     */
-    @Pointcut("execution(* com.todolist.service.*.*(..))")
-    public void serviceMethods() {}
+    private final JwtUtils jwtUtils;
 
-    /**
-     * Around advice для логирования выполнения методов сервисов
-     */
-    @Around("serviceMethods()")
-    public Object logMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String className = signature.getDeclaringType().getSimpleName();
-        String methodName = signature.getName();
+    @Pointcut("within(com.mipt.nagibinMikhail.toDoList.service..*)")
+    public void serviceLayer() {}
+
+    @Pointcut("within(com.mipt.nagibinMikhail.toDoList.client..*)")
+    public void clientLayer() {}
+
+    @Around("serviceLayer() || clientLayer()")
+    public Object logMethodCall(ProceedingJoinPoint joinPoint) throws Throwable {
+        String methodName = joinPoint.getSignature().toShortString();
+        String traceId = MDC.get("traceId");
+
+        // Маскируем чувствительные аргументы
         Object[] args = joinPoint.getArgs();
+        String maskedArgs = maskSensitiveArgs(args);
 
-        logger.info("=== AOP: НАЧАЛО выполнения {}.{}() ===", className, methodName);
-        logger.info("Параметры: {}", args.length > 0 ? Arrays.toString(args) : "нет параметров");
+        log.debug("Calling {} with args: {} trace={}", methodName, maskedArgs, traceId);
 
         long startTime = System.currentTimeMillis();
-        Object result = null;
-
         try {
-            result = joinPoint.proceed();
-            long endTime = System.currentTimeMillis();
+            Object result = joinPoint.proceed();
+            long duration = System.currentTimeMillis() - startTime;
 
-            logger.info("=== AOP: ЗАВЕРШЕНИЕ {}.{}() ===", className, methodName);
-
-            if (result != null) {
-                logger.info("Результат: {}", result);
-            } else {
-                logger.info("Результат: void (метод ничего не возвращает)");
-            }
-
-            logger.info("Время выполнения: {} мс", (endTime - startTime));
-
+            log.debug("Completed {} in {}ms trace={}", methodName, duration, traceId);
             return result;
 
-        } catch (Throwable throwable) {
-            logger.error("=== AOP: ОШИБКА в {}.{}() ===", className, methodName);
-            logger.error("Тип ошибки: {}", throwable.getClass().getSimpleName());
-            logger.error("Сообщение: {}", throwable.getMessage());
-            throw throwable;
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("Error in {} after {}ms: {} trace={}",
+                methodName, duration, e.getMessage(), traceId);
+            throw e;
         }
+    }
+
+    private String maskSensitiveArgs(Object[] args) {
+        if (args == null || args.length == 0) {
+            return "[]";
+        }
+
+        return Arrays.toString(Arrays.stream(args)
+            .map(arg -> {
+                if (arg == null) return "null";
+                String argStr = arg.toString();
+                // Маскируем пароли и токены
+                if (argStr.contains("password") || argStr.contains("token")) {
+                    return "[MASKED]";
+                }
+                return argStr;
+            })
+            .toArray());
     }
 }

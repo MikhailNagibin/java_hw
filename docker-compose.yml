@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16.2
+    container_name: todolist-db
+    environment:
+      POSTGRES_DB: todolist
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qwerty
+    ports:
+      - "5432:5432"  # ← ЭТА СТРОКА ОЧЕНЬ ВАЖНА!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
